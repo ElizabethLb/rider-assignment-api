@@ -39,6 +39,16 @@ public class ApplicationTest {
     }
 
     @Test
+    @DisplayName("should get no assignments when table is empty")
+    public void test1_testGetAssignmentsWhenTableIsEmpty() {
+        RiderAssignment[] response = restTemplate.getForObject(baseUrl, RiderAssignment[].class);
+
+        assertNotNull(response);
+        assertEquals(0, response.length);
+        assertEquals(0, testH2Repository.count());
+    }
+
+    @Test
     @DisplayName("should register a new assignment")
     @Sql(statements = "DELETE FROM rider_assignments", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void test3_testAddAssignment() {
