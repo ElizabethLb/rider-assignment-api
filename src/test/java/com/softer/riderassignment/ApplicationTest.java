@@ -47,6 +47,26 @@ public class ApplicationTest {
     }
 
     @Test
+    @DisplayName("should get all assignments when table is not empty")
+    @Sql(statements = "INSERT INTO rider_assignments(id, delivery_id, rider_id, status, assigned_at) "
+            + "VALUES (1, 7001, 301, 'ASSIGNED', '2026-11-21 10:00:00')",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(statements = "DELETE FROM rider_assignments", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void test2_testGetAssignmentsWhenTableIsNotEmpty() {
+        RiderAssignment[] response = restTemplate.getForObject(baseUrl, RiderAssignment[].class);
+
+        assertNotNull(response);
+        assertEquals(1, response.length);
+        assertAll(
+                () -> assertEquals(1L, response[0].getId()),
+                () -> assertEquals(7001L, response[0].getDeliveryId()),
+                () -> assertEquals(301L, response[0].getRiderId()),
+                () -> assertEquals(AssignmentStatus.ASSIGNED, response[0].getStatus()),
+                () -> assertEquals(1, testH2Repository.count())
+        );
+    }
+
+    @Test
     @DisplayName("should register a new assignment")
     @Sql(statements = "DELETE FROM rider_assignments", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void test3_testAddAssignment() {
