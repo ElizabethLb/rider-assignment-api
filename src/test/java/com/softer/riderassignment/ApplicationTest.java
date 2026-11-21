@@ -91,4 +91,24 @@ public class ApplicationTest {
         assertEquals(7001L, saved.getDeliveryId());
         assertEquals(301L, saved.getRiderId());
     }
+
+    @Test
+    @DisplayName("should get assignment with id=1")
+    @Sql(statements = "INSERT INTO rider_assignments(id, delivery_id, rider_id, status, assigned_at) "
+            + "VALUES (1, 7001, 301, 'ASSIGNED', '2026-11-21 10:00:00')",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(statements = "DELETE FROM rider_assignments", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void test4_testFindAssignmentById() {
+        RiderAssignment response = restTemplate.getForObject(baseUrl + "/{id}", RiderAssignment.class, 1L);
+
+        assertNotNull(response);
+        assertAll(
+                () -> assertEquals(1L, response.getId()),
+                () -> assertEquals(7001L, response.getDeliveryId()),
+                () -> assertEquals(301L, response.getRiderId()),
+                () -> assertEquals(AssignmentStatus.ASSIGNED, response.getStatus()),
+                () -> assertEquals(LocalDateTime.of(2026, 11, 21, 10, 0), response.getAssignedAt()),
+                () -> assertEquals(1, testH2Repository.count())
+        );
+    }
 }
