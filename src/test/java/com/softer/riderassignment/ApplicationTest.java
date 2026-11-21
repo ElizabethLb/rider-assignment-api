@@ -111,4 +111,26 @@ public class ApplicationTest {
                 () -> assertEquals(1, testH2Repository.count())
         );
     }
+    @Test
+    @DisplayName("should update assignment with id=1")
+    @Sql(statements = "INSERT INTO rider_assignments(id, delivery_id, rider_id, status, assigned_at) "
+            + "VALUES (1, 7001, 301, 'ASSIGNED', '2026-11-21 10:00:00')",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(statements = "DELETE FROM rider_assignments", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void test5_testUpdateAssignment() {
+        RiderAssignment request = new RiderAssignment(
+                1L, 7002L, 302L, AssignmentStatus.ACCEPTED, null);
+
+        restTemplate.put(baseUrl + "/{id}", request, 1L);
+
+        RiderAssignment saved = testH2Repository.findById(1L).orElseThrow();
+        assertAll(
+                () -> assertEquals(1L, saved.getId()),
+                () -> assertEquals(7002L, saved.getDeliveryId()),
+                () -> assertEquals(302L, saved.getRiderId()),
+                () -> assertEquals(AssignmentStatus.ACCEPTED, saved.getStatus()),
+                () -> assertEquals(LocalDateTime.of(2026, 11, 21, 10, 0), saved.getAssignedAt()),
+                () -> assertEquals(1, testH2Repository.count())
+        );
+    }
 }
